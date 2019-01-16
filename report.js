@@ -1,3 +1,12 @@
+
+/*
+                ____________________________________________________________________________
+                ______     ______    ______    ______    ______    ______           ∞  ____
+                ||__||     ||__      ||  ||    ||  ||    ||__||      ||             |  |___
+                || \__.    ||____    ||        ||__||    || \__.     ||     ∞    |__|  ____|
+                ____________________________________________________________________________
+
+*/
 /*  I n t e r n a l   T o o l s   */
 // internal sameContent function
 _sameContent = (a, b, failsafe) => {
@@ -22,15 +31,15 @@ _sameContent = (a, b, failsafe) => {
     else return (A === B)
 }
 
-
 // DISPLAY FUNCTION
 /**  
-    * @dev display the display object computed by report()
-    * @param disp the display object containing datas to display *passed by report()*
-    * @param eType the element improved typeof (argument "elems" from report())
-    * @notice disp {object} SHOULD contain keys [type, length, stringified, title, ranked]
-    */
-    _display = (disp, eType) => {
+* @dev display the display object computed by report()
+* @param disp the display object containing datas to display *passed by report()*
+* @param eType the element improved typeof (argument "elems" from report())
+* @notice disp {object} SHOULD contain keys [type, length, stringified, title, ranked]
+*/
+_display = (_disp, _eType) => {
+    ((disp, eType) => {
 
         /// STRING ELEMENTS USED ///
         let _step = 'step'
@@ -128,19 +137,25 @@ _sameContent = (a, b, failsafe) => {
             if (disp.returnElement)  
             return disp.returnElement    
         })
-    }
+
+    })(_disp, _eType)
+}
 
 
+
+/**
+ * @dev Tools namespace containing all methods
+ */
 const Tools = {
 
-    /**
-     * @dev verify if client[key] is well stringified: has no nested object that is not stringified (stringify if needed)
-     * @param obj the Client[key] to check clean stringifization of
+     /**
+     * @dev stringifyNestedKey verifies if Object obj[key] is well stringified: has no nested object that is not stringified (stringifies if needed)
+     * @param obj the Object obj[key] to check clean stringifization of
      * @param keys an array of obj keys
-     * @return a clean stringified Client[key]
-     * @notice tests if encrObj doesn't contain any nested object
+     * @return a clean stringified Object obj[key]
+     * @notice seeks if obj doesn't contain any nested object
      */
-    stringifyClientKey : (obj, keys) => {
+    stringifyNestedKey : (obj, keys) => {
         return new Promise((resolve, reject) => {
 
             var newObj = {}
@@ -270,23 +285,23 @@ const Tools = {
      * @param elems *optional* an element to display for this step
      * @param opt *optional* display options object *passed to _display()*
      * @notice display options: :   
-     *          "type"(bool): improved version of typeof
-     *          "length": retrieve the real length of elems depending of its type
-     *          "inspect"(bool or string): 'true' returns all available options / "only" returns all precedent options only
-     *          "stringify"(boolean): display JSON as strings instead of ranked list default display
-     *          "highlight"(bool): highlights the report block
-     *          "step": add a step index on title line
-     *          "then": add a line after block to display a future step
-     *          "testStart": add a test top line to indicate start of test
-     *          "objKeys": display the keys of nested {object}
-     *          "functionString" : dont display 'function' type objects of 'elems' nested keys as strings but display 'function' instead
-     *          "from" : function name from which the report comes (or any other displayable information)
-     *          "returnElement" : returns the provided element
+     *                              "type"(bool): improved version of typeof
+     *                              "length": retrieve the real length of elems depending of its type
+     *                              "inspect"(bool or string): 'true' returns all available options / "only" returns all precedent options only
+     *                              "stringify"(boolean): display JSON as strings instead of ranked list default display
+     *                              "highlight"(bool): highlights the report block
+     *                              "step": add a step index on title line
+     *                              "then": add a line after block to display a future step
+     *                              "testStart": add a test top line to indicate start of test
+     *                              "objKeys": display the keys of nested {object}
+     *                              "functionString" : dont display 'function' type objects of 'elems' nested keys as strings but display 'function' instead
+     *                              "from" : function name from which the report comes (or any other displayable information)
+     *                              "returnElement" : returns the provided element
      *                              /// TODO ///
      *                                  "arrayKeys" : display a name for each index of an array (param 'elems')
      *                              ///
      * 
-     * @notice mocks : console.log('\n--* title *-- \n elem: value \n elem: value\n*')
+     * @return the passed element if option returnElement is positive (sync only) 
      */
     report : (title, elems, opt) => {
         if (!elems && elems != '') console.log('--* %s *--\n',typeof title !== 'object' ? title : JSON.stringify(title))
@@ -365,6 +380,7 @@ const Tools = {
                 return _display(display, eType)
 
 
+
             })
         }
 
@@ -375,8 +391,8 @@ const Tools = {
      * @dev force computation of an object{}[] in a displayable
      * @param jsn the element to test/compute/return
      * @param opt *optional* options are : 
-     *                  "failMsg"               // return a "can't display data" string statement instead of "undefined" is test failed
-     *                  "functionString"        // return function type objects as a string "function" instead of stringified function 
+     *                              "failMsg"               // return a "can't display data" string statement instead of "undefined" is test failed
+     *                              "functionString"        // return function type objects as a string "function" instead of stringified function 
      * @return may be equal to jsn or an 'undefined' string // NO ERR HANDLING: returns the 'undefined' string
      */
     forcedString : (jsn, opt) => {
@@ -388,10 +404,20 @@ const Tools = {
 
                 try { 
                     console.log('     ∞ forced string case ∞')
-                    // console.log('∞forced on : %s', _jsn)
-                    // console.log('∞options : %s', JSON.stringify(_opt))
-                    // console.log('∞typeof : %s', typeof _jsn)
-                    // NEW VERSION
+                    console.log('∞forced on : %s', _jsn)
+                    console.log('∞options : %s', JSON.stringify(_opt))
+                    console.log('∞typeof : %s', typeof _jsn)
+                    // // NEW VERSION
+                    // let tryJSON = isJSON(_jsn) ? JSON.parse(_jsn) : _jsn
+                    // let Return = tryJSON ? tryJSON : String(_jsn+" (String())")
+
+                    // setTimeout(() => {
+                    //     return(
+                    //         Return ? Return : ((_opt.fail || _opt.failMsg) ? (_opt.failMsg || cantDisplay) : cantDisplay)
+                    //     )
+                    // })
+
+                    // OLD VERSION
                     console.log('typeof _jsn', typeof _jsn)
                     // use _jsn
                     tryJSON = (_opt.functionString && typeof _jsn === 'function') ? 'function' : JSON.stringify(_jsn)
@@ -440,9 +466,11 @@ const Tools = {
     /**
      * @dev return an empty element depending on requested type
      * @param request the type of element to return (objects are either "array" or "object")
-     * @return an element corresponding to request
+     * @param returnType *optional* : retrieve the improved type of returned element
+     * @return  - if "returnType" is true: an object { elem: the_computed_element, type: improved_typeof_returned_elem } 
+     *          - if "returnType" is false (default): an element corresponding to request
      */
-    empty : (request) => {
+    empty : (request, returnType) => {
         switch (request) {
             case 'number' :
             return new Number()
@@ -470,9 +498,7 @@ const Tools = {
 
     },
 
-    /**  return real type for objects 
-     * @param elem the element to test / return the improved typeof
-     */
+    // return real type for objects 
     ofType : (elem) => {
         return(
             ((_e) => {
@@ -513,11 +539,11 @@ const Tools = {
      * @dev know the real length of an element / how many elements an object contains
      * @param elem the element to test and return the length of  
      * @param opt the type of element you are looking 
-     *          "numString"(bool) : return length of provided numbers as String(elem).length instead of default number return
-     *          "fail"(any) : return a provided element of any type instead of default undefined 
-     *          "restrict"(regular typeof or 'array') : request a test to determine if elem has a requested type, otherwise, return the 'fail' element 
-     *          "minLen"(number) : restrict the test to a minimum length, return fail or undefined if passed test result is lower than minLen
-     *          "maxLen"(number) : restrict the test to a maximum length, return fail or undefined if passed test result is higher than maxLen
+     *              "numString"(bool) : return length of provided numbers as String(elem).length instead of default number return
+     *              "fail"(any) : return a provided element of any type instead of default undefined 
+     *              "restrict"(regular typeof or 'array') : request a test to determine if elem has a requested type, otherwise, return the 'fail' element 
+     *              "minLen"(number) : restrict the test to a minimum length, return fail or undefined if passed test result is lower than minLen
+     *              "maxLen"(number) : restrict the test to a maximum length, return fail or undefined if passed test result is higher than maxLen
      * 
      * @notice return numbers as provided except if a numString option is indicated
      * @notice *important* 'function' type is not handled
@@ -599,140 +625,31 @@ const Tools = {
 
     random : (mod) => {
         return Math.floor(Math.random() * (mod || 100000000))
-    }
-}
-
-
-
-///
-
-
-
-
-
-
-								/// NEXT UTILS IDEAS ///
-
-/**
-	////// 'nested' immediate function example
-    // a module that enable protecting datas inside of an immediate function (IIFE)
-    // based on this model :
-
-    var choose = function(elem) {
-        var element = 'testing'         // element is unreachable from outside the iife
-        return (function() {
-            return(
-        /// code:
-            elem != element
-            
-        ///
-            )
-        }())
-    }
- */
- 
-/**
-    ////// JSON manipulation example
-    var jayStr = 'I am Jason'
-    var strJay = '["I am Jason"]'
-    var objJay = '{"elem": "jay value"}' 
-    var jason = strJay
-
-    var jasonIsJson = isJSON(objJay)
-    console.log('\n\n'+jasonIsJson+'\n\n')
-
-    if (jasonIsJson) {
-        console.log(JSON.parse(objJay)[Object.keys(JSON.parse(objJay))])
-    }
-*/
-/// /ideas ///
-
-
-// enables calling any tool function
-tool = (name, _params) => {
-console.log('*req*\ntool params : '+_params)
-console.log('*tool params count : '+_params.length)
-
-	//return Tools[name](Array.from(params.map((e) => { return e }).map((p) => {return p;})))
-    var Ps = [];
+    },
     
-    for (p in _params) {Ps.push(_params[p])}
-   	setTimeout(() => {
-    console.log('Ps : %s', Tools.elemContains(Ps[1], {numString:true, fail:'*failed*'}))
-    return Tools[name](Ps)
-    })
+    /**
+     * @dev the function that create functions
+     * @notice USAGE: console.log(Tools.wrap('report', ["* HELLO FROM REPORT *", 'null', {inspect:true, step:3, highlight:'test wrapping'}]))
 
-}
+     */
+    wrap : (fName, params) => {
+    //console.log('received params callingFunction : ', params)
+        // return a function calling the requested funName
 
-
-
-// report('hello world')
-//var REPORT = tool ('report', ["* HELLO FROM REPORT *", {inspect:true, highlight:'test', returnElement:true}])
-//setTimeout(() => {
-//console.log("*res*\ntool returned : "+REPORT)
-//})
-
-
-
-
-
-
-
-
-
-////////////
-//////////// trying to pass params to another function with precedently shown method ////////////
-// the function to call from another one
-var tocall = (a, b, c) => {
-console.log('params finally received by original tocall', a, b, c)
-a.map((e) => {e++})
-	console.log('a : %s \n b: %s \n c: %s',a, b, c);
-    console.log(Tools.isJSON(c) ? '* isJSON *' : '* nonJSON *')
-    console.log(a && b && c)
-}
-// the function that create functions
-var wrap = (fName, params) => {
-//console.log('received params callingFunction : ', params)
-    // return a function calling the requested funName
-    
-    var F = function() {
-        let arr = [];
-        // apply arguments to anonymous f nested in Tools and return 
-		return Tools[fName].apply(null, params)
+        return (function(_n, _p) {
+            let arr = [];
+            //tocall(p[0], p[1], p[2]);
+            return Tools[_n].apply(null, _p)
+        })(fName, params)
+        
+        
     }
-    return F
-    
 }
 
-var args = [[1, 2, 3], 'two', JSON.stringify({time:'12h50'})];
-// with closure
-console.log(wrap('report', ["* HELLO FROM REPORT *", {inspect:true, highlight:'test', returnElement:true}])())
-
-////////////
+module.exports.tools = Tools
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// TEST TOOLS NAMESPACE //
+//console.log(Tools.wrap('report', ["* REPORT.js loaded *", '', {returnElem:true; step:'module loaded'}]))
 
 
