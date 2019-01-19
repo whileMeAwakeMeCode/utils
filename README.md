@@ -14,7 +14,7 @@ Tools methods :
 
   - stringifyNestedKey(Promise) : verifies if Object Object[key] is well stringified: has no nested object that is not stringified (stringifies if needed) 
   
-  -isJSON : guarantee that the passed variable has a JSON type
+  - isJSON : guarantee that the passed variable has a JSON type
   
   - noJSONStrings(Promise) : responsible for verifying that Object[key] parsed version of an originally stringified nested object doesnt contain any nested stringified object that should be rendered as a plain object
   
