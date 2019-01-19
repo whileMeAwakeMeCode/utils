@@ -88,7 +88,7 @@ Tools methods :
                         else, return synchronized
      
   - reqTypeFrom : request an element of a specific type with any other elements nested within / as content
-      "preventText": return an array of a given length instead of including provided number as a string within
+      "preventText": return an array of a given length instead of including provided number as a string within OR prevent object text forms [Object object] and render the real object
       
                   
 
