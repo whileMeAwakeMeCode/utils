@@ -76,8 +76,8 @@ _display = (_disp, _eType) => {
 
         // object elements
         else if (disp.ranked) {
-
             // * default display * : used for non object elements if no options are provided
+          
             if (eType === 'array') {
 
                 disp.ranked.map((e, i) => {
@@ -132,15 +132,8 @@ _display = (_disp, _eType) => {
         console.log('*/'+hLighBottom+'\n'+then)   
 
 
-
-        setTimeout(() => { 
-            if (disp.returnElement)  
-            return disp.returnElement    
-        })
-
     })(_disp, _eType)
 }
-
 
 
 /**
@@ -184,8 +177,6 @@ const Tools = {
     isJSON : (supJSON) => {
 
         try {
-            // tryParsing = JSON.parse(supJSON) || undefined;
-            // return tryParsing !== undefined
             if (JSON.parse(supJSON)) return true
 
         } catch(err) {
@@ -204,17 +195,14 @@ const Tools = {
             var newObj = {}
 
             try {
-                //report('verify that nested keys doesnt contain any JSON type', obj, {then:'check JSON value, map object keys'})
+                // verify that nested keys doesnt contain any JSON type
                 var keys = Object.keys(obj);
                 var keysMapped = await new Promise((mapped) => {
                     keys.map(async (key, i) => {
 
                         // check if obj[key] value has a JSON type 
                         var hasJSONValue = await new Promise((res) => {res(Tools.isJSON(obj[key]))});
-                        //report('check JSON value of client[key]', {key:key, objKey: obj[key], hasJSONValue:hasJSONValue}, {step:8})
-                        //report('the nested key hasJSONValue ?', {objKey: obj[key], hasJSONValue : hasJSONValue}, {step:'noJSONStrings: hasJSON ?', highlight:false})
-                        //report('parsed / notparsed', [JSON.parse(obj[key]), obj[key]])
-
+                        
                         newObj[key] = await new Promise((res) => {
                             res(
                                 hasJSONValue ?              
@@ -224,16 +212,13 @@ const Tools = {
                         })
 
                         if (i+1 === keys.length) {
-                            //report('exit key mapping', {i:i+1, exitLen:keys.length}, {step:9})
                             mapped(newObj)
 
                         }
                     })
                 })
-                //report('new clean object with noJSON build (SHOULD NOT contain any stringified key', keysMapped, {step:'clean object (noJSONStrings)', stringify:true, inspect:true, highlight:true})
 
                 var newKeysLen = Object.keys(keysMapped).length
-                //report('check matching newKeysLen === keys.length ', {old_length : newKeysLen, new_length: keys.length, match: ( newKeysLen === keys.length )}, {step:11})
 
                 if (newKeysLen === keys.length)
                     resolve(newObj)
@@ -248,7 +233,7 @@ const Tools = {
         })
     },
 
-
+    
     now : () => {
         return new Promise((res) => {
             var now = parseInt(Date.now() / 1000);
@@ -256,10 +241,10 @@ const Tools = {
         })
     },
 
-    sessionExpiry : () => {
+    sessionExpiry : (sess) => {
         return new Promise(async (res, rej) => {
             var Now = await Tools.now();
-            var Expiry = Now + process.env.SESSION_EXPIRY
+            var Expiry = Now + (sess || process.env.SESSION_EXPIRY)
 
             setTimeout(() => {
                 res(Expiry)
@@ -348,8 +333,7 @@ const Tools = {
                 display.objKeys = opt.objKeys
                 // display function from which the report comes
                 display.from = opt.from
-                // return the element
-                display.returnElement = opt.returnElement ? elems : undefined
+                
 
 
                 //*
@@ -375,11 +359,8 @@ const Tools = {
 
             setTimeout(() => {
                 // display
-                // let reqReturn = _display(display, eType)
-                // console.log('*REQ RETURN*', reqReturn)
-                return _display(display, eType)
-
-
+                _display(display, eType)
+                return opt && opt.returnElement ? elems : 'undefined'
 
             })
         }
@@ -403,10 +384,10 @@ const Tools = {
                 var Return, tryJSON, tryString, _return;
 
                 try { 
-                    console.log('     ∞ forced string case ∞')
-                    console.log('∞forced on : %s', _jsn)
-                    console.log('∞options : %s', JSON.stringify(_opt))
-                    console.log('∞typeof : %s', typeof _jsn)
+                    // console.log('     ∞ forced string case ∞')
+                    // console.log('∞forced on : %s', _jsn)
+                    // console.log('∞options : %s', JSON.stringify(_opt))
+                    // console.log('∞typeof : %s', typeof _jsn)
                     // // NEW VERSION
                     // let tryJSON = isJSON(_jsn) ? JSON.parse(_jsn) : _jsn
                     // let Return = tryJSON ? tryJSON : String(_jsn+" (String())")
@@ -427,7 +408,7 @@ const Tools = {
                     _return = tryString.length > 0 ? tryString : _jsn
                     //if (_return) report('_return', _return, {inspect:true})
 
-                    Return = _return ? _return : ((_opt.fail || _opt.failMsg) ? (_opt.failMsg || cantDisplay) : cantDisplay)
+                    Return = _return ? _return : ((_opt && (_opt.fail || _opt.failMsg)) ? (_opt.failMsg || cantDisplay) : cantDisplay)
 
                     setTimeout(() => {
                         // test passed
@@ -447,7 +428,7 @@ const Tools = {
                             tryJSON ? 
                             tryJSON : 
                             (
-                                (_opt.fail || _opt.failMsg) ? 
+                                (_opt && (_opt.fail || _opt.failMsg)) ? 
                                 (_opt.failMsg || cantDisplay) : 
                                 cantDisplay
                             )
@@ -463,41 +444,113 @@ const Tools = {
 
 
 
-    /**
-     * @dev return an empty element depending on requested type
-     * @param request the type of element to return (objects are either "array" or "object")
-     * @param returnType *optional* : retrieve the improved type of returned element
-     * @return  - if "returnType" is true: an object { elem: the_computed_element, type: improved_typeof_returned_elem } 
-     *          - if "returnType" is false (default): an element corresponding to request
-     */
-    empty : (request, returnType) => {
-        switch (request) {
+/**
+ * @dev return an empty element depending on requested type
+ * @param request the type of element to return (objects are either "array" or "object")
+ * @param opt *options* :
+ *          "insert"(any) : *option* insert an element inside the new distributed element
+ *          "assign"(object, array) : *option* will return one object containing the "insert" object keys/value pairs 
+ *                                             + the provided "assign" object key/value pairs or array pair indexes as keys and impair indexes as value 
+ *          "preventText"(bool) : *option* if true, return an array of a requested length of null instead of including "insert" as string(default) 
+ * @return an element of any type corresponding to the request or undefined
+ */
+empty : (request, opt) => {
+    return ((r, o) => {
+        var ins = o.insert 
+        var t = Tools.ofType(ins)
+        let u = "undefined"
+
+        switch (r) {
             case 'number' :
-            return new Number()
+            return (isNaN(Number(ins)) ? Number() : Number(ins))
             break
-
+    
             case 'string' :
-            return new String()
+            return (typeof String(ins) != u ? String(ins) : String())
             break
-
+    
             case 'boolean' :
-            return new Boolean()
+            return (typeof Boolean(ins) !== u ? Boolean(ins) : Boolean())
             break
-
+    
             case 'object' :
-            return new Object()
+            let O = Object()
+
+            return (
+                (t === 'object') ?              // insert type : object
+                (   
+                    (o && (ins || o.assign)) ?
+                    (Object.assign((ins || O)), (o.assign || O)) :
+                    ins
+                ) :                           
+                (                               
+                    t === 'array' ?             // insert type : array
+                    /*'insert array'*/
+                    ((_arr, _opt) => {
+	
+                        let properties = {}
+                        
+                        //loop in arr and build the new object properties according to requested options
+                        arr.map((e, i) => {
+                            let ind = _opt.assign ? e : i
+                            let pair = Tools.isPair(i)
+                            
+                            if (!(_opt.assign && !pair))
+                            properties[ind] = ((_e, _i, _pair) => { 
+                                   let add = _pair ? ( _opt.assign ? _arr[_i+1] : _e ) : _opt.assign ? undefined : _e
+                                if (add)
+                                    return add
+                                else if (typeof _arr[_i+1] === 'undefined' && _opt.assign && !_pair)
+                                    return 'undefined'	
+                            })(e, i, pair)
+                            
+                        })
+                        
+                        return properties
+                        
+                    })(ins, o) :     
+                     
+
+                    // define new object properties
+                    ((_ins, _t) => {                        // insert type !(object || array)
+                        let O_ = Object()                   //                  '-> return a simple object containing either the key (opt.assign) or key "0" and value ins  
+                      
+                            
+                        ((_O_) => {
+                            Object.defineProperties(_O_, {
+                                [o.assign ? (!Tools.sameContent(o.assign.toString(), 'true') ? o.assign : _ins) : "0"]: {
+                                    value: o.assign ? 'undefined' : _ins,
+                                    writable: true
+                                }
+                            })
+                            return _O_
+                        })(O_)
+                            
+
+                    })(ins, t)  
+                )
+            )
             break
-
+    
             case 'array' :
-            return new Array()
-
+            let cond = Tools.ofType(ins) === 'array' 
+            ins = (o && o.preventText ? ins : ins.toString())
+            return (
+                cond ?
+                ins :
+                Tools.ofType(Array(ins) !== u) ? Array(ins) : Array()
+            )
+            break
+            //////// old //////
+            // ins = o && o.preventText ? ins : ins.toString() 
+            // return (Tools.ofType(Array(ins) !== u) ? Array(ins) : Array())
+    
             default : 
             return undefined
-
         }
-
-    },
-
+    })(request, (opt || {}))
+      
+},
     // return real type for objects 
     ofType : (elem) => {
         return(
@@ -511,7 +564,7 @@ const Tools = {
                     return 'undefined' 
 
                 else if (t === 'object') 
-                    return _e.length ? 'array' : 'object'
+                    return typeof _e.length !== 'undefined' ? 'array' : 'object'
 
                 else return t
 
@@ -538,7 +591,7 @@ const Tools = {
     /**
      * @dev know the real length of an element / how many elements an object contains
      * @param elem the element to test and return the length of  
-     * @param opt the type of element you are looking 
+     * @param opt the type of element you are looking at
      *              "numString"(bool) : return length of provided numbers as String(elem).length instead of default number return
      *              "fail"(any) : return a provided element of any type instead of default undefined 
      *              "restrict"(regular typeof or 'array') : request a test to determine if elem has a requested type, otherwise, return the 'fail' element 
@@ -552,7 +605,7 @@ const Tools = {
         let t = typeof elem
 
         // restrict error / fail return
-        if (opt.restrict && opt.restrict !== Tools.ofType(elem))
+        if (opt && opt.restrict && opt.restrict !== Tools.ofType(elem))
             return opt.fail || undefined
 
         else {
@@ -596,12 +649,13 @@ const Tools = {
      * @notice  Failsafe options : 
      *          'lengthOnly' : test same length only   
      *          'length' : test exact matching + same length
+     			'strict'(bool) : if true, if b is an array of elements, all elements must match a
      *          
      * @notice  if no failsafe is provided, default : exact matching 
      */
     sameContent : (a, b, failsafe) => {
 
-        if (!b) return undefined
+        if (!b || (b && !a)) return undefined
         else {
             //| new |/////////////
             // if b is an array with at least 2 elements, call _sameContent for each element to test matchin with param "a"
@@ -626,30 +680,103 @@ const Tools = {
     random : (mod) => {
         return Math.floor(Math.random() * (mod || 100000000))
     },
+
+    validElem : (_elem) => {
+        return (
+            typeof _elem !== 'undefined'
+        )
+    },
+    /** // reqTypeFrom("array", "im a string")    should return: ["im a string"]
+     * @dev compute a specific type from any given element
+     * @param _t (type) the requested element type to return from _e
+     * @param _e (any) the element to compute
+     * @param _o *options* array options :
+     *          "preventText": return an array of a given length instead of including provided number as a string within   
+     */
+    reqTypeFrom : (_t, _e, _o) => {
+
+        return Tools.wrap("empty",[ _t, {insert:_e, preventText:(_o || {}).preventText}], {immediateCall:true}) 
+        
+    },
     
     /**
      * @dev the function that create functions
+     * @param fName Tools object method name to wrap in a closure
+     * @param params function parameters
+     * @param opt wrapper options : 
+     *          "returnFunction"(bool) : if true, return an executable computed wrapped function containing the passed datas/arguments, if false *idem "immediateCall"*
+     *          "immediateCall"(bool) : if true, returns the execution result of the requested wrapped function, else *idem "returnFunction"*
+     *          "promisify"(bool) : if true, return a promisified version of the wrapped function, else, return synchronized
      * @notice USAGE: console.log(Tools.wrap('report', ["* HELLO FROM REPORT *", 'null', {inspect:true, step:3, highlight:'test wrapping'}]))
-
      */
-    wrap : (fName, params) => {
-    //console.log('received params callingFunction : ', params)
-        // return a function calling the requested funName
+    wrap : (fName, params, opt) => {                
+        
+        var rF = Tools.validElem(opt && opt.returnFunction) ? opt.returnFunction.toString() : "null"
+        var iC = Tools.validElem(opt && opt.immediateCall) ? opt.immediateCall.toString() : "null"
 
-        return (function(_n, _p) {
-            let arr = [];
-            //tocall(p[0], p[1], p[2]);
-            return Tools[_n].apply(null, _p)
-        })(fName, params)
+        let cond1 = Tools.sameContent(rF, "true")   // returnFunction: true          
+        let cond2 = Tools.sameContent(iC, "false")  // immediateCall: false 
+           
+        // CONDITION to function return ////
+        var _cond_ = !cond2 && !cond1
+
+        return (    
+            _cond_ ?                              
+            
+            (    
+                // call an immediate function and return result
+                ((_n, _p) => {
+                    return (Tools[_n].apply(null, _p))
+                                
+                })(fName, params) 
+                
+
+            ) : (  
+
+                // else return the wrapped function itself
+                ((_n, _p) => {
+                    
+                    return function() {
+                        return (Tools[_n].apply(null, _p))
+                    }
+                                
+                })(fName, params)
+            )
+
+        )
+
+
+        // version with promise handling
+        // // return a function calling the requested funName
+        // // case Promise requested
+        // if (!opt || !opt.promisify) {
+        //     return (function(_n, _p) {
+                
+        //         return (Tools[_n].apply(null, _p))
+                    
+        //     })(fName, params)
+
+        // // case regular function requested
+        // } else {
+
+        //     return (function(_n, _p) {
+        //         return new Promise(async (res, rej) => {
+
+        //             var response = await Tools[_n].apply(null, _p)
+        //             res(response)
+        //         })
+        //     })(fName, params)
+
+        // }
         
         
+    },
+    
+    isPair : (num) => {
+    	return num%2 === 0
     }
 }
 
 module.exports.tools = Tools
-
-
-// TEST TOOLS NAMESPACE //
-//console.log(Tools.wrap('report', ["* REPORT.js loaded *", '', {returnElem:true; step:'module loaded'}]))
 
 
